@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strategy Agent — Executive MBA PBS</title>
+<style>
+  :root {
+    --primary: #1a1a2e;
+    --secondary: #16213e;
+    --accent: #0f3460;
+    --highlight: #e94560;
+    --text: #eee;
+    --text-muted: #999;
+    --bg: #0a0a1a;
+    --card: #12122a;
+    --border: #1e1e3a;
+    --success: #2ecc71;
+    --warning: #f1c40f;
+    --info: #3498db;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .header-icon {
+    width: 42px; height: 42px;
+    background: var(--highlight);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 4px 15px rgba(233,69,96,0.3);
+  }
+  .header-text h1 {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .header-text p {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .header-badge {
+    margin-left: auto;
+    background: rgba(233,69,96,0.15);
+    color: var(--highlight);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* Main Content */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Chat Area */
+  .chat-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    scroll-behavior: smooth;
+  }
+  .chat-area::-webkit-scrollbar { width: 6px; }
+  .chat-area::-webkit-scrollbar-track { background: transparent; }
+  .chat-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* Messages */
+  .message {
+    max-width: 85%;
+    margin-bottom: 20px;
+    animation: fadeIn 0.4s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .message.bot { margin-right: auto; }
+  .message.user { margin-left: auto; }
+
+  .message-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .message.user .message-label { text-align: right; }
+
+  .message-bubble {
+    padding: 16px 20px;
+    border-radius: 16px;
+    line-height: 1.6;
+    font-size: 14px;
+  }
+  .message.bot .message-bubble {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-top-left-radius: 4px;
+  }
+  .message.user .message-bubble {
+    background: linear-gradient(135deg, var(--accent), #1a4a8a);
+    border-top-right-radius: 4px;
+  }
+
+  /* Company Cards */
+  .company-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .company-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .company-card:hover {
+    border-color: var(--highlight);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(233,69,96,0.15);
+  }
+  .company-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+    background: var(--highlight);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .company-card:hover::before { opacity: 1; }
+  .company-card h3 {
+    font-size: 15px;
+    margin-bottom: 4px;
+    color: #fff;
+  }
+  .company-card .sector {
+    font-size: 11px;
+    color: var(--highlight);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .company-card .desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .company-card .data-tag {
+    display: inline-block;
+    background: rgba(233,69,96,0.1);
+    color: var(--highlight);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    margin-top: 8px;
+    margin-right: 4px;
+  }
+
+  /* Question Type Cards */
+  .question-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .question-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .question-card:hover {
+    border-color: var(--info);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(52,152,219,0.15);
+  }
+  .question-card .type-badge {
+    display: inline-block;
+    background: var(--info);
+    color: #fff;
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    text-align: center;
+    line-height: 28px;
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  .question-card h4 { font-size: 13px; margin-bottom: 4px; }
+  .question-card .qdesc { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+  .question-card .tools-tag {
+    font-size: 10px;
+    color: var(--warning);
+    margin-top: 8px;
+  }
+
+  /* Answer Content */
+  .answer-content {
+    margin-top: 12px;
+  }
+  .answer-content h2 {
+    font-size: 16px;
+    color: var(--highlight);
+    margin: 20px 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .answer-content h3 {
+    font-size: 14px;
+    color: var(--info);
+    margin: 16px 0 8px;
+  }
+  .answer-content h4 {
+    font-size: 13px;
+    color: #ccc;
+    margin: 12px 0 6px;
+  }
+  .answer-content p {
+    font-size: 13px;
+    line-height: 1.7;
+    margin-bottom: 8px;
+    color: #ccc;
+  }
+  .answer-content strong { color: #fff; }
+  .answer-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 12px;
+  }
+  .answer-content th {
+    background: rgba(233,69,96,0.15);
+    color: var(--highlight);
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    border: 1px solid var(--border);
+  }
+  .answer-content td {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    color: #bbb;
+  }
+  .answer-content tr:hover td { background: rgba(255,255,255,0.02); }
+  .answer-content ul, .answer-content ol {
+    margin: 8px 0 8px 20px;
+    font-size: 13px;
+    color: #bbb;
+  }
+  .answer-content li { margin-bottom: 4px; line-height: 1.6; }
+  .answer-content pre {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 12px;
+    overflow-x: auto;
+    margin: 12px 0;
+    color: #aaa;
+    font-family: 'Consolas', 'Monaco', monospace;
+    white-space: pre-wrap;
+  }
+
+  .step-badge {
+    display: inline-block;
+    background: var(--highlight);
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    margin: 16px 0 8px;
+  }
+
+  /* Loading */
+  .typing-indicator {
+    display: flex;
+    gap: 4px;
+    padding: 8px 0;
+  }
+  .typing-indicator span {
+    width: 8px; height: 8px;
+    background: var(--text-muted);
+    border-radius: 50%;
+    animation: bounce 1.4s infinite;
+  }
+  .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-6px); }
+  }
+
+  /* Back Button */
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-top: 12px;
+    transition: all 0.2s;
+  }
+  .back-btn:hover {
+    border-color: var(--highlight);
+    color: var(--highlight);
+  }
+
+  /* Footer */
+  .footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    background: var(--primary);
+    flex-shrink: 0;
+  }
+  .footer-inner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .footer input {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .footer input:focus { border-color: var(--accent); }
+  .footer input::placeholder { color: #555; }
+
+  .powered-by {
+    text-align: center;
+    font-size: 10px;
+    color: #444;
+    margin-top: 8px;
+    letter-spacing: 0.5px;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .company-grid { grid-template-columns: 1fr; }
+    .question-grid { grid-template-columns: 1fr; }
+    .message { max-width: 95%; }
+    .header-badge { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">&#9813;</div>
+  <div class="header-text">
+    <h1>Strategy Agent</h1>
+    <p>Executive MBA — Porto Business School</p>
+  </div>
+  <div class="header-badge">AI-Powered</div>
+</div>
+
+<div class="main">
+  <div class="chat-area" id="chatArea"></div>
+</div>
+
+<div class="footer">
+  <div class="footer-inner">
+    <input type="text" id="userInput" placeholder="Selecione uma empresa acima para começar..." readonly>
+  </div>
+  <div class="powered-by">Powered by Claude AI — Strategy Exam Preparation System — Prof. Luís Filipe Reis</div>
+</div>
+
+<script>
+// ─── DATA ──────────────────────────────────────────────────────────────────────
+
+const companies = {
+  nors: {
+    name: "NORS",
+    sector: "Distribuição Veículos Pesados",
+    desc: "Rebranding radical de 17 para 1 marca, criando Branded House global após 90 anos de diversificação M&A.",
+    tags: ["€1.5B", "3,000 colab.", "3 continentes"],
+    header: "Grupo Nors (Distribuição Veículos Pesados)",
+    context: "Rebranding radical (17→1 marca) para criar Branded House global, consolidando 90 anos de diversificação M&A",
+    keyData: "€1,5B faturação | 3.000 colaboradores | 3 continentes | 90 anos relação Volvo | CEO Tomás Jervell (3ª geração) | \"Human Deal\" 5 valores"
+  },
+  digi: {
+    name: "DIGI",
+    sector: "Telecoms Low-Cost / Disrupção",
+    desc: "Operador disruptivo com Value Innovation radical — €5 vs €80 dos incumbentes. 850K serviços em Portugal.",
+    tags: ["850K serviços", "€5 vs €80", "6D's"],
+    header: "DIGI (Telecoms Low-Cost Disruptivo)",
+    context: "Value Innovation radical no mercado telecoms português — preço disruptivo 50-70% abaixo dos incumbentes",
+    keyData: "850K serviços | €5 vs €80 incumbentes | Origem Roménia | Entrada Portugal 2024 | Disrupção 6D's aplicável"
+  },
+  visabeira: {
+    name: "Visabeira",
+    sector: "Conglomerado Engenharia",
+    desc: "Mega-conglomerado com potencial Desconto de Conglomerado. Goldman Sachs envolvido na reestruturação.",
+    tags: ["€2.7B", "Goldman Sachs", "Nearing"],
+    header: "Grupo Visabeira (Conglomerado Engenharia e Serviços)",
+    context: "Conglomerado diversificado enfrentando questão central: Desconto de Conglomerado vs Parenting Advantage",
+    keyData: "€2,7B faturação | Goldman Sachs advisor | Nearing (plataforma digital) | Múltiplos setores | Fernando Campos fundador"
+  },
+  vista_alegre: {
+    name: "Vista Alegre",
+    sector: "Porcelana / Luxo / Heritage",
+    desc: "200 anos de história. Integrada no Grupo Visabeira. Projeto 539 de rejuvenescimento da marca.",
+    tags: ["200 anos", "Projeto 539", "Luxo"],
+    header: "Vista Alegre (Porcelana e Luxo Heritage)",
+    context: "Marca bicentenária de luxo português integrando tradição com inovação (Projeto 539) dentro do Grupo Visabeira",
+    keyData: "200 anos história | Grupo Visabeira | Projeto 539 | Marca heritage portuguesa | Segmento luxo | Mercados internacionais"
+  },
+  frulact: {
+    name: "Frulact",
+    sector: "Ingredientes Alimentares B2B",
+    desc: "Modelo co-development B2B com aquisição de €600M. Internacionalização agressiva em múltiplos continentes.",
+    tags: ["€300M", "€600M M&A", "B2B"],
+    header: "Frulact (Ingredientes Alimentares B2B)",
+    context: "Empresa B2B de preparados de fruta com modelo de co-development e internacionalização agressiva via M&A",
+    keyData: "€300M faturação | €600M aquisição | Modelo co-development | Múltiplos continentes | Segmento B2B ingredientes"
+  },
+  tekever: {
+    name: "Tekever",
+    sector: "Drones / DefTech / Unicórnio",
+    desc: "Unicórnio português de drones militares. Contrato OVERMATCH £400M com NATO. Disrupção tecnológica pura.",
+    tags: ["Unicórnio", "£400M NATO", "DefTech"],
+    header: "Tekever (Drones e DefTech)",
+    context: "Unicórnio português de drones/deftech com contrato mega OVERMATCH e conexões NATO, operando na fronteira da disrupção",
+    keyData: "Unicórnio | OVERMATCH £400M | Conexões NATO | Drones militares | Disrupção tecnológica | Ricardo Mendes CEO"
+  },
+  super_bock: {
+    name: "Super Bock",
+    sector: "Bebidas / Sustentabilidade",
+    desc: "Líder do mercado cervejeiro português. €80M investimento em descarbonização. Water stress como desafio central.",
+    tags: ["€608M", "€80M green", "Water stress"],
+    header: "Super Bock Group (Bebidas)",
+    context: "Líder do mercado cervejeiro português enfrentando water stress e investindo massivamente em descarbonização",
+    keyData: "€608M faturação | €80M descarbonização | Water stress | Marca líder Portugal | Sustentabilidade ESG"
+  }
+};
+
+const questionTypes = {
+  A: { label: "Enquadramento Estratégico", desc: "Análise completa: PESTEL, Porter+, Genéricas, VRIN, 7S, Teia Cultural, SWOT", tools: "PESTEL → Porter+ → Genéricas → VRIN → 7S → Teia → SWOT", values: "3-5 val", role: "CSO" },
+  B: { label: "Recomendação ao Board", desc: "M&A logic, arquitetura financeira, ROI, strategic fit", tools: "M&A → 7S → Arq. Financeira → ROI", values: "4-5 val", role: "CEO" },
+  C: { label: "Contra-Argumentação", desc: "Defender posição com VRIN rigoroso, 3-4 argumentos numerados", tools: "VRIN rigoroso → Contra-argumentos → Mitigação", values: "3-4 val", role: "Defensor" },
+  D: { label: "Entrada em Mercado", desc: "CAGE (tabela 4 países), Ansoff, Modos de Entrada, 12C", tools: "CAGE → Ansoff → Modos Entrada → 12C", values: "3 val", role: "CDO" },
+  E: { label: "Capabilities & Vantagem", desc: "Top 5 capabilities com VRIN por letra, investimento priorizado", tools: "Hamel → VRIN × 5 → Investimento €", values: "2 val", role: "Analista" },
+  F: { label: "Geopolítica / VUCA", desc: "PESTEL geopolítico, VUCA, impacto empresa específico", tools: "PESTEL → VUCA → Impacto Empresa", values: "1-2 val", role: "Estratega" },
+  G: { label: "Ética & ESG", desc: "Princípio + 3-4 Argumentos + Segmentação + Matriz Legal/Ética", tools: "Princípio → Argumentos → Segmentação → Matriz", values: "2 val", role: "Conselheiro" }
+};
+
+// ─── ANSWER DATA ───────────────────────────────────────────────────────────────
+
+const answers = {};
+
+// NORS — Type A
+answers["nors_A"] = `
+<h2>QUESTÃO — Tipo A: Enquadramento Estratégico Completo (CSO)</h2>
+
+<div class="step-badge">PASSO 1 — Palavras-Chave → Ferramentas</div>
+
+<table>
+<tr><th>Palavra-Chave da Pergunta</th><th>Ferramenta</th><th>Objetivo</th></tr>
+<tr><td>Contexto estratégico</td><td>PESTEL, Porter+, VUCA</td><td>Analisar macroambiente e indústria</td></tr>
+<tr><td>Rebranding radical (17→1)</td><td>7S McKinsey, Teia Cultural</td><td>Alinhamento organizacional</td></tr>
+<tr><td>Valores "Human Deal"</td><td>Shared Values, Teia Cultural</td><td>Coesão cultural</td></tr>
+<tr><td>Distribuição Volvo (90 anos)</td><td>VRIN, Porter+</td><td>Relação privilegiada vs risco dependência</td></tr>
+<tr><td>Implicações futuro</td><td>Ansoff, CAGE, BCG</td><td>Internacionalização e diversificação</td></tr>
+</table>
+
+<div class="step-badge">PASSO 2 — Sequência de Ferramentas</div>
+
+<ol>
+<li><strong>PESTEL</strong> — Key Drivers for Change: transição energética e eletrificação</li>
+<li><strong>Porter+ completo</strong> — Análise crítica das 5+2 forças na distribuição veículos pesados</li>
+<li><strong>Estratégias Genéricas</strong> — Posição na Curva U: diferenciação por serviço integrado</li>
+<li><strong>VRIN</strong> — Relação 90 anos com Volvo como potencial Joia da Coroa</li>
+<li><strong>BCG</strong> — Portfolio analysis com Ciclo do Dinheiro</li>
+<li><strong>7S McKinsey</strong> — Alinhamento pré vs pós-rebranding 17→1</li>
+<li><strong>Teia Cultural</strong> — Transformação de 17 culturas para 1 cultura NORS</li>
+<li><strong>SWOT</strong> — Síntese estratégica final</li>
+</ol>
+
+<div class="step-badge">PASSO 3 — Aplicação Completa</div>
+
+<h3>PESTEL — Transição Energética como Key Driver for Change</h3>
+
+<p><strong>Contexto:</strong></p>
+<ul>
+<li><strong>Tailwinds:</strong> Crescimento logística global (+4.2% CAGR), eletrificação pesados (Volvo objetivo 50% vendas elétricas 2030), regulação Euro 7 favorece players estabelecidos</li>
+<li><strong>Headwinds:</strong> Transição ICE→EV reduz aftermarket (menos peças = menos margem), crise supply chain pós-COVID, pressão ESG sobre diesel pesado</li>
+</ul>
+<p><strong>Implicação estratégica:</strong> NORS precisa reposicionar-se de distribuidor tradicional para parceiro de mobilidade sustentável. A relação Volvo é o ativo mais valioso nesta transição — Volvo lidera eletrificação pesados.</p>
+
+<h3>Porter+ — Dependência Crítica do Fornecedor Principal</h3>
+
+<table>
+<tr><th>Força</th><th>Avaliação</th><th>Implicação</th></tr>
+<tr><td><strong>Poder Fornecedores</strong></td><td>MUITO ALTO</td><td>Volvo = 65%+ receitas. Dependência crítica de 1 fabricante</td></tr>
+<tr><td><strong>Rivalidade</strong></td><td>MÉDIO-ALTO</td><td>Mercado fragmentado localmente, mas players regionais fortes</td></tr>
+<tr><td><strong>Poder Clientes</strong></td><td>MÉDIO</td><td>Grandes frotas negoceiam agressivamente; PMEs mais cativos</td></tr>
+<tr><td><strong>Novos Entrantes</strong></td><td>BAIXO</td><td>Barreira relacional + capital + know-how aftermarket</td></tr>
+<tr><td><strong>Substitutos</strong></td><td>MÉDIO</td><td>Leasing/renting em crescimento; direct-to-customer de OEMs</td></tr>
+<tr><td><strong>+ Tecnologia</strong></td><td>ALTO</td><td>Eletrificação muda modelo aftermarket (menos peças, mais software)</td></tr>
+<tr><td><strong>+ Regulação</strong></td><td>ALTO</td><td>Euro 7, zonas emissão zero urbanas, incentivos EV</td></tr>
+</table>
+
+<p><strong>Foco crítico:</strong> Poder desproporcional do fornecedor Volvo cria risco existencial — a NORS é parceiro estratégico mas substituível. O rebranding 17→1 é parcialmente uma resposta a esta vulnerabilidade, criando marca própria independente do fabricante.</p>
+
+<h3>VRIN — Relação Volvo 90 Anos como Joia da Coroa (PARCIAL)</h3>
+
+<ul>
+<li><strong>V (Valuable):</strong> SIM — Gera 65%+ receitas, acesso privilegiado a veículos e peças, formação técnica prioritária. €1,5B de faturação suportada por esta relação.</li>
+<li><strong>R (Rare):</strong> SIM — 90 anos de relação contínua é praticamente impossível de replicar. Poucos distribuidores no mundo têm esta longevidade com um OEM.</li>
+<li><strong>I (Inimitable):</strong> SIM — Path dependency de 3 gerações familiares. Conhecimento tácito acumulado, confiança pessoal Jervell-Volvo, integração de processos ao longo de décadas.</li>
+<li><strong>N (Non-substitutable):</strong> PARCIALMENTE — Volvo pode decidir distribuição direta (tendência EV). Tesla modelo direct-to-consumer mostra que OEMs podem dispensar distribuidores. Risco real.</li>
+</ul>
+
+<p><strong>Conclusão:</strong> VRI confirmados, N parcialmente — vantagem competitiva temporária, não sustentável garantida. O rebranding NORS é estratégia de mitigação: construir valor de marca independente da Volvo para sobreviver se a relação enfraquecer.</p>
+
+<h3>7S McKinsey — Alinhamento Pré vs Pós-Rebranding</h3>
+
+<table>
+<tr><th>7S</th><th>Antes (17 marcas)</th><th>Depois (NORS)</th><th>Risco/Oportunidade</th></tr>
+<tr><td><strong>Strategy</strong></td><td>Multimarca por aquisição</td><td>Branded House integrada</td><td>✓ Escala e sinergias</td></tr>
+<tr><td><strong>Structure</strong></td><td>Silos por empresa/país</td><td>Matriz funcional/geográfica</td><td>⚠ Resistência local</td></tr>
+<tr><td><strong>Systems</strong></td><td>17 ERPs diferentes</td><td>Plataforma unificada</td><td>⚠ Custo migração €10-15M</td></tr>
+<tr><td><strong>Skills</strong></td><td>Especializadas por marca</td><td>Competências NORS transversais</td><td>✓ Cross-selling</td></tr>
+<tr><td><strong>Staff</strong></td><td>3.000 colab, identidades locais</td><td>Identidade única "somos NORS"</td><td>⚠ Perda talento nostálgico</td></tr>
+<tr><td><strong>Style</strong></td><td>Liderança descentralizada</td><td>CEO Tomás Jervell centraliza visão</td><td>✓ Clareza direção</td></tr>
+<tr><td><strong>Shared Values</strong></td><td>"Somos empresa X da cidade Y"</td><td>"Human Deal" 5 valores</td><td>✓ Vértice que sustém tudo</td></tr>
+</table>
+
+<p><strong>Síntese 7S:</strong> A transição 17→1 é coerente mas os S soft (Staff, Style) são o maior risco. A resistência cultural de 3.000 colaboradores que perderam "a sua marca" é o principal desafio de implementação. "Human Deal" como Shared Values é a cola que precisa de pegar.</p>
+
+<h3>Teia Cultural — 17 Culturas → 1 Cultura NORS</h3>
+
+<pre>
+ANTES (17 marcas):
+- Símbolo: 17 logos diferentes, identidades visuais fragmentadas
+- Ritual: Reuniões por empresa, prémios por marca, culturas sociais locais
+- História: "Fundámos a empresa X em 1985", narrativas locais
+- Poder: Gestores locais autónomos, "donos" da sua marca
+- Estrutura: Silos verticais, duplicação de funções
+- Controle: KPIs por empresa, sem comparabilidade
+- Pessoas: "Sou da Auto Sueco" vs "Sou da Soma"
+
+PROBLEMA = 17 identidades paralelas sem sinergias, impossível escalar
+
+DEPOIS (NORS):
+- Símbolo: 1 logo NORS, "Human Deal" visual unificado
+- Ritual: Convenção NORS anual, prémios transversais
+- História: "90 anos de mobilidade, 3 gerações Jervell"
+- Poder: C-Suite corporativo, governance centralizada
+- Estrutura: Matriz funcional + geográfica
+- Controle: KPIs grupo, Balanced Scorecard unificado
+- Pessoas: "Sou NORS — mobilidade com propósito"
+
+BENEFÍCIO = Escala, sinergias cross-selling, marca empregadora forte
+</pre>
+
+<p><strong>Risco Cultural — Resistência dos "antigos":</strong></p>
+<ol>
+<li>Programa "Legacy Champions" — celebrar história das 17 marcas dentro da narrativa NORS</li>
+<li>Quick wins nos primeiros 100 dias — benefícios tangíveis da unificação</li>
+<li>Comunicação intensiva CEO Tomás — roadshow 3 continentes</li>
+</ol>
+
+<h3>SWOT — Síntese Estratégica</h3>
+
+<table>
+<tr><th></th><th>Positivo</th><th>Negativo</th></tr>
+<tr><td><strong>Interno</strong></td><td><strong>Forças:</strong> Relação Volvo 90 anos, presença 3 continentes, rebranding bem executado, Human Deal como cultura forte</td><td><strong>Fraquezas:</strong> Dependência Volvo (65%+ receitas), custos transição 17→1, risco resistência cultural interna</td></tr>
+<tr><td><strong>Externo</strong></td><td><strong>Oportunidades:</strong> Eletrificação pesados (first-mover com Volvo), crescimento logística global, marca única facilita M&A futuro</td><td><strong>Ameaças:</strong> Distribuição direta pelos OEMs (modelo Tesla), disrupção aftermarket com EV, recessão reduz capex frotas</td></tr>
+</table>
+
+<h3>CONCLUSÃO — Recomendação CSO</h3>
+
+<ol>
+<li><strong>Proteger a Joia da Coroa parcial:</strong> Reforçar relação Volvo com value-add (dados frota, manutenção preditiva, serviços EV) — investimento ~€20M em digital para ser indispensável</li>
+<li><strong>Diversificar dependência:</strong> Acelerar parcerias com outros OEMs (SANY, Dongfeng) para reduzir Volvo de 65% para 45-50% em 5 anos</li>
+<li><strong>Monetizar rebranding:</strong> Usar marca NORS unificada como plataforma de M&A internacional — adquirir 2-3 distribuidores em mercados CAGE-próximos</li>
+<li><strong>Transformar aftermarket:</strong> De peças físicas para serviços digitais (telematics, manutenção preditiva, fleet management as a service)</li>
+</ol>
+`;
+
+// NORS — Type C
+answers["nors_C"] = `
+<h2>QUESTÃO — Tipo C: Contra-Argumentação (3-4 val)</h2>
+
+<div class="step-badge">PASSO 1 — Palavras-Chave → Ferramentas</div>
+
+<table>
+<tr><th>Palavra-Chave da Pergunta</th><th>Ferramenta</th><th>Objetivo</th></tr>
+<tr><td>Rebranding desnecessário</td><td>VRIN, Teia Cultural</td><td>Provar valor da transformação</td></tr>
+<tr><td>Dependência Volvo mantém-se</td><td>Porter+, VRIN</td><td>Contra-argumentar com dados</td></tr>
+<tr><td>Custos elevados sem ROI</td><td>Arquitetura Financeira</td><td>Demonstrar retorno concreto</td></tr>
+<tr><td>Cultura destruída</td><td>7S, Teia Cultural</td><td>Provar que cultura evolui, não morre</td></tr>
+</table>
+
+<div class="step-badge">PASSO 2 — Sequência de Ferramentas</div>
+
+<ol>
+<li><strong>VRIN rigoroso</strong> — Teste por letra da marca NORS vs 17 marcas</li>
+<li><strong>Contra-Argumento 1</strong> — Marca unificada como novo ativo VRIN</li>
+<li><strong>Contra-Argumento 2</strong> — ROI financeiro do rebranding</li>
+<li><strong>Contra-Argumento 3</strong> — Cultura não destruída, evoluída</li>
+</ol>
+
+<div class="step-badge">PASSO 3 — Aplicação Completa</div>
+
+<h3>ARGUMENTO 1 — A marca NORS unificada cria VRIN que 17 marcas nunca tiveram</h3>
+
+<p><strong>Contra-Argumento:</strong></p>
+<p>"Com 17 marcas separadas, nenhuma tinha VRIN completo. NORS unificada sim:"</p>
+<ul>
+<li><strong>V (Valuable?):</strong> SIM — Uma marca com €1,5B de escala permite cross-selling entre unidades. O cliente de veículos pesados em Angola também pode contratar peças e serviço em Moçambique sob a mesma marca.</li>
+<li><strong>R (Rare?):</strong> SIM — Nenhum concorrente regional tem marca unificada intercontinental de distribuição. O peer mais próximo opera com marcas locais desconectadas.</li>
+<li><strong>I (Inimitable?):</strong> SIM — 90 anos de path dependency + decisão audaciosa de consolidar = impossível replicar. Um concorrente teria de adquirir 17 empresas e depois fundir tudo.</li>
+<li><strong>N (Non-substitutable?):</strong> SIM — A marca NORS é mais difícil de substituir do que qualquer das 17 individuais. Substituir "Auto Sueco" é trivial; substituir "NORS em 3 continentes" não.</li>
+</ul>
+<p><strong>Conclusão:</strong> O rebranding transforma 17 ativos sem VRIN individual num único ativo com VRIN completo — uma Joia da Coroa que não existia antes.</p>
+
+<h3>ARGUMENTO 2 — O ROI é quantificável e positivo</h3>
+
+<p><strong>Contra-Argumento:</strong></p>
+<pre>
+Custo Rebranding (One-Time):          €15-20M
+  - Identidade visual:                €3M
+  - Migração sistemas:                €10-12M
+  - Comunicação/rollout:              €2-5M
+
+Benefício Anual (Recorrente):          €25-35M
+  - Eliminação duplicação marketing:   €5-8M/ano
+  - Sinergias procurement (1 marca):   €10-15M/ano
+  - Cross-selling internacional:       €10-12M/ano
+
+Payback:                               8-10 meses
+NPV (10 anos @ 8% discount):          €150M+
+</pre>
+<p><strong>Conclusão:</strong> O investimento paga-se em menos de 1 ano. A Arquitetura Financeira demonstra criação de valor clara — qualquer CFO aprovaria.</p>
+
+<h3>ARGUMENTO 3 — A cultura não foi destruída, foi elevada</h3>
+
+<p><strong>Contra-Argumento:</strong></p>
+<p>"17 culturas fragmentadas não são uma força, são uma fraqueza. O rebranding não destrói cultura — eleva-a:"</p>
+<ul>
+<li>O "Human Deal" com 5 valores é mais forte do que 17 variações locais ad-hoc</li>
+<li>Shared Values (vértice do 7S) antes era vazio — cada empresa tinha os seus. Agora existe um centro real.</li>
+<li>A Teia Cultural mostra que os 7 elementos ganham coerência: antes 17 símbolos confusos, agora 1 identidade clara</li>
+<li>Precedentes mostram que Branded Houses (Virgin, Tata, Samsung) retêm diversidade operacional dentro de unidade simbólica</li>
+</ul>
+<p><strong>Conclusão:</strong> O argumento "cultura destruída" confunde nostalgia com estratégia. A cultura NORS é deliberada e mais sustentável do que 17 culturas acidentais.</p>
+
+<h3>MITIGAÇÃO do risco residual</h3>
+<ol>
+<li>Programa "Legacy Wall" em cada escritório — honrar história sem manter fragmentação</li>
+<li>KPIs de engagement cultural nos primeiros 24 meses</li>
+<li>Exit interviews se turnover subir >10% — monitorar se resistência cultural causa perda de talento</li>
+</ol>
+`;
+
+// DIGI — Type A
+answers["digi_A"] = `
+<h2>QUESTÃO — Tipo A: Enquadramento Estratégico Completo (CSO)</h2>
+
+<div class="step-badge">PASSO 1 — Palavras-Chave → Ferramentas</div>
+
+<table>
+<tr><th>Palavra-Chave da Pergunta</th><th>Ferramenta</th><th>Objetivo</th></tr>
+<tr><td>Disrupção telecoms</td><td>PESTEL, 6D's, Porter+</td><td>Analisar impacto no mercado</td></tr>
+<tr><td>Value Innovation radical</td><td>Curvas de Valor, Genéricas</td><td>Posicionamento único</td></tr>
+<tr><td>€5 vs €80</td><td>Porter+, Genéricas, Curva U</td><td>Cost leadership extrema</td></tr>
+<tr><td>Reação incumbentes</td><td>Porter+, C1-C4</td><td>Dinâmica competitiva</td></tr>
+<tr><td>Sustentabilidade modelo</td><td>VRIN, BCG, Ansoff</td><td>Avaliar durabilidade estratégica</td></tr>
+</table>
+
+<div class="step-badge">PASSO 2 — Sequência de Ferramentas</div>
+
+<ol>
+<li><strong>PESTEL</strong> — Key Drivers for Change: regulação ANACOM + digitalização</li>
+<li><strong>6D's da Disrupção</strong> — DIGI como caso perfeito de Diamandis</li>
+<li><strong>C1-C4</strong> — Delimitação do campo competitivo telecoms</li>
+<li><strong>Porter+</strong> — Impacto da DIGI nas 5+2 forças</li>
+<li><strong>Curvas de Valor</strong> — Eliminar/Reduzir/Aumentar/Criar</li>
+<li><strong>Estratégias Genéricas</strong> — Cost Leadership extrema</li>
+<li><strong>VRIN</strong> — Teste da vantagem competitiva DIGI</li>
+<li><strong>SWOT</strong> — Síntese</li>
+</ol>
+
+<div class="step-badge">PASSO 3 — Aplicação Completa</div>
+
+<h3>PESTEL — Regulação ANACOM como Enabler</h3>
+
+<p><strong>Tailwinds:</strong> ANACOM obriga partilha de rede, regulação pro-concorrência, digitalização 5G, consumidores price-sensitive pós-inflação 2022-2024</p>
+<p><strong>Headwinds:</strong> Lobbying incumbentes (MEO/NOS/Vodafone), perceção qualidade low-cost = fraca, investimento infraestrutura própria requerido a médio prazo</p>
+<p><strong>Implicação estratégica:</strong> O ambiente regulatório português é o Key Driver — sem obrigação de partilha de rede, a DIGI não poderia operar. A regulação é simultaneamente enabler e vulnerabilidade (pode mudar).</p>
+
+<h3>6D's da Disrupção — DIGI como caso perfeito</h3>
+
+<table>
+<tr><th>D</th><th>Aplicação DIGI</th></tr>
+<tr><td><strong>Digitalization</strong></td><td>Telecoms já digital por natureza — DIGI é digital-native (sem legacy)</td></tr>
+<tr><td><strong>Deception</strong></td><td>Fase inicial: incumbentes subestimaram ("low-cost não funciona em telecoms")</td></tr>
+<tr><td><strong>Disruption</strong></td><td>850K serviços em meses — crescimento exponencial confirmado</td></tr>
+<tr><td><strong>Desmonetization</strong></td><td>€5 vs €80 — desmonetização de 93% do preço do serviço</td></tr>
+<tr><td><strong>Dematerialization</strong></td><td>Sem lojas físicas (ou mínimas), 100% self-service digital</td></tr>
+<tr><td><strong>Democratization</strong></td><td>Telecoms acessível a segmentos excluídos por preço (imigrantes, jovens, reformados)</td></tr>
+</table>
+
+<h3>Porter+ — DIGI Reformula as Forças</h3>
+
+<table>
+<tr><th>Força</th><th>Antes DIGI</th><th>Depois DIGI</th></tr>
+<tr><td><strong>Rivalidade</strong></td><td>BAIXA (oligopólio MEO/NOS/Vodafone)</td><td>ALTA (price war iniciada)</td></tr>
+<tr><td><strong>Poder Clientes</strong></td><td>BAIXO (sem alternativa barata)</td><td>ALTO (agora podem mudar por 1/16 do preço)</td></tr>
+<tr><td><strong>Novos Entrantes</strong></td><td>MUITO BAIXO (capex enorme)</td><td>MÉDIO (DIGI provou que MVNO funciona)</td></tr>
+<tr><td><strong>+ Tecnologia</strong></td><td>Favorece incumbentes (5G capex)</td><td>Favorece disruptores (cloud-native, eSIM)</td></tr>
+<tr><td><strong>+ Regulação</strong></td><td>Status quo protegido</td><td>ANACOM como aliado disruptor</td></tr>
+</table>
+
+<h3>VRIN — Modelo Low-Cost DIGI (PARCIAL)</h3>
+
+<ul>
+<li><strong>V (Valuable):</strong> SIM — 850K serviços provam demanda massiva. Valor claro para o consumidor: mesma rede, 1/16 do preço.</li>
+<li><strong>R (Rare):</strong> TEMPORARIAMENTE — Primeiro low-cost telecoms em PT, mas modelo replicável (Iliad em França fez o mesmo).</li>
+<li><strong>I (Inimitable):</strong> NÃO — Qualquer operador pode reduzir preços. O modelo não tem barreiras estruturais — é eficiência operacional, não asset único.</li>
+<li><strong>N (Non-substitutable):</strong> NÃO — WiFi gratuito, planos familiares incumbentes, e resposta de preço dos grandes (já MEO lançou sub-marcas) substituem parcialmente.</li>
+</ul>
+<p><strong>Conclusão:</strong> Apenas V confirmado plenamente — vantagem competitiva frágil. A DIGI precisa de evoluir de "preço baixo" para algo com VRIN real (marca? ecossistema? dados?) antes que incumbentes respondam.</p>
+
+<h3>SWOT — Síntese</h3>
+
+<table>
+<tr><th></th><th>Positivo</th><th>Negativo</th></tr>
+<tr><td><strong>Interno</strong></td><td>Estrutura de custos 80% inferior, digital-native, experiência Roménia/Hungria/Espanha</td><td>Sem rede própria (dependência partilha), marca nova sem confiança, serviço mínimo (sem lojas)</td></tr>
+<tr><td><strong>Externo</strong></td><td>ANACOM pro-concorrência, consumidores sensíveis ao preço, 5G abre oportunidades</td><td>Resposta dos incumbentes (sub-marcas low-cost), possível mudança regulatória, price war erode margens</td></tr>
+</table>
+`;
+
+// DIGI — Type F
+answers["digi_F"] = `
+<h2>QUESTÃO — Tipo F: Análise VUCA (1-2 val)</h2>
+
+<div class="step-badge">PASSO 1 — Palavras-Chave → Ferramentas</div>
+
+<table>
+<tr><th>Palavra-Chave da Pergunta</th><th>Ferramenta</th><th>Objetivo</th></tr>
+<tr><td>Incerteza mercado telecoms</td><td>VUCA, PESTEL</td><td>Mapear volatilidade do setor</td></tr>
+<tr><td>Resposta incumbentes</td><td>Porter+, Cenários</td><td>Antecipar reações competitivas</td></tr>
+<tr><td>Impacto regulatório</td><td>PESTEL (Legal/Political)</td><td>Vulnerabilidade regulatória</td></tr>
+</table>
+
+<div class="step-badge">PASSO 2 — Sequência de Ferramentas</div>
+
+<ol>
+<li><strong>PESTEL</strong> — Foco nos drivers de incerteza</li>
+<li><strong>VUCA</strong> — Classificação por dimensão</li>
+<li><strong>Impacto empresa</strong> — Cenários para a DIGI</li>
+</ol>
+
+<div class="step-badge">PASSO 3 — Aplicação Completa</div>
+
+<h3>VUCA — Classificação do Ambiente DIGI</h3>
+
+<table>
+<tr><th>Dimensão</th><th>Nível</th><th>Evidência</th><th>Resposta Estratégica</th></tr>
+<tr><td><strong>Volatility</strong></td><td>ALTA</td><td>Price war iniciada, quota muda rapidamente (0→850K em meses)</td><td>Estrutura de custos flexível, sem ativos fixos pesados</td></tr>
+<tr><td><strong>Uncertainty</strong></td><td>MUITO ALTA</td><td>Reação regulatória incerta, resposta incumbentes imprevisível</td><td>Cenários múltiplos, não apostar tudo em 1 cenário</td></tr>
+<tr><td><strong>Complexity</strong></td><td>ALTA</td><td>Interação regulador + incumbentes + tecnologia + consumidor</td><td>Monitorizar todos os stakeholders simultaneamente</td></tr>
+<tr><td><strong>Ambiguity</strong></td><td>MÉDIA</td><td>O modelo low-cost funciona (provado noutros mercados) — mas timing/escala incerto</td><td>Aprender com Iliad (FR), Sprint (US), Jio (India)</td></tr>
+</table>
+
+<p><strong>Implicação:</strong> O ambiente VUCA da DIGI é dominado por Uncertainty — o regulador ANACOM é simultaneamente o maior aliado e o maior risco. Uma mudança de governo ou de orientação regulatória pode eliminar a vantagem competitiva da noite para o dia.</p>
+`;
+
+// Visabeira — Type A
+answers["visabeira_A"] = `
+<h2>QUESTÃO — Tipo A: Enquadramento Estratégico Completo (CSO)</h2>
+
+<div class="step-badge">PASSO 1 — Palavras-Chave → Ferramentas</div>
+
+<table>
+<tr><th>Palavra-Chave da Pergunta</th><th>Ferramenta</th><th>Objetivo</th></tr>
+<tr><td>Conglomerado diversificado</td><td>Ashridge, Heartland/Alien</td><td>Avaliar Parenting Advantage</td></tr>
+<tr><td>Desconto de Conglomerado</td><td>Desconto Conglomerado, Arq. Financeira</td><td>Quantificar destruição de valor</td></tr>
+<tr><td>Goldman Sachs envolvido</td><td>M&A, Arq. Financeira</td><td>Reestruturação e IPO/venda</td></tr>
+<tr><td>Múltiplos setores</td><td>BCG, Diversificação</td><td>Portfolio analysis</td></tr>
+<tr><td>Nearing (digital)</td><td>3 Horizontes, VRIN</td><td>Aposta futuro</td></tr>
+</table>
+
+<div class="step-badge">PASSO 2 — Sequência de Ferramentas</div>
+
+<ol>
+<li><strong>PESTEL</strong> — Key Drivers: consolidação setorial e transição digital</li>
+<li><strong>BCG</strong> — Portfolio com Ciclo do Dinheiro</li>
+<li><strong>Ashridge + Heartland/Alien</strong> — Cada negócio no quadrante correto</li>
+<li><strong>Desconto de Conglomerado</strong> — Quantificação da destruição de valor</li>
+<li><strong>VRIN</strong> — O que é Joia da Coroa no grupo?</li>
+<li><strong>Arquitetura Financeira</strong> — Cenários reestruturação</li>
+<li><strong>SWOT</strong> — Síntese</li>
+</ol>
+
+<div class="step-badge">PASSO 3 — Aplicação Completa</div>
+
+<h3>Desconto de Conglomerado — O Problema Central</h3>
+
+<pre>
+Soma das Partes (SOTP):
+- Engenharia/Telecoms:    €1.2B (EV/EBITDA 8x)
+- Imobiliário:            €0.5B
+- Turismo/Hotelaria:      €0.3B
+- Vista Alegre:           €0.2B
+- Nearing (digital):      €0.3B
+- Outros:                 €0.2B
+TOTAL SOTP:              ~€2.7B
+
+Valor de Mercado Grupo:  ~€1.8-2.0B (estimado)
+DESCONTO CONGLOMERADO:   25-33% (~€700M-900M destruídos)
+
+Razão: Mercado não entende a lógica de ter engenharia,
+porcelana, turismo e software na mesma holding.
+</pre>
+
+<h3>Heartland/Alien — Classificação do Portfolio</h3>
+
+<table>
+<tr><th>Negócio</th><th>Classificação</th><th>Recomendação</th></tr>
+<tr><td><strong>Engenharia/Telecoms</strong></td><td>HEARTLAND</td><td>Core business — manter e investir. HQ entende e cria valor.</td></tr>
+<tr><td><strong>Nearing (digital)</strong></td><td>HEARTLAND potencial</td><td>Aposta futuro — precisa de capital mas alinhada com competências.</td></tr>
+<tr><td><strong>Vista Alegre</strong></td><td>VALUE-TRAP</td><td>⚠ HQ não entende luxo/porcelana mas tenta gerir. Risco destruir valor.</td></tr>
+<tr><td><strong>Turismo</strong></td><td>ALIEN</td><td>Sem sinergias com core, HQ não cria valor. Candidato a desinvestimento.</td></tr>
+<tr><td><strong>Imobiliário</strong></td><td>BALLAST</td><td>Gera cash mas não cresce. Manter enquanto financia Heartland.</td></tr>
+</table>
+
+<p><strong>Conclusão:</strong> Goldman Sachs provavelmente recomenda "focus and divest" — vender Turismo e preparar IPO separado da Vista Alegre, concentrando o grupo em Engenharia + Nearing. Isso poderia eliminar €500-700M de desconto de conglomerado.</p>
+
+<h3>SWOT — Síntese</h3>
+
+<table>
+<tr><th></th><th>Positivo</th><th>Negativo</th></tr>
+<tr><td><strong>Interno</strong></td><td>€2.7B escala, diversificação como hedge, Nearing como aposta digital, marca fundador forte</td><td>Desconto conglomerado 25-33%, complexidade gestão, sinergias limitadas entre setores</td></tr>
+<tr><td><strong>Externo</strong></td><td>Goldman Sachs como advisor (credibilidade mercado), consolidação setorial = oportunidade M&A</td><td>Mercado penaliza conglomerados, custo capital elevado pela complexidade, regulação setorial diversa</td></tr>
+</table>
+`;
+
+// Vista Alegre — Type B
+answers["vista_alegre_B"] = `
+<h2>QUESTÃO — Tipo B: Recomendação ao Board (CEO) (4-5 val)</h2>
+
+<div class="step-badge">PASSO 1 — Palavras-Chave → Ferramentas</div>
+
+<table>
+<tr><th>Palavra-Chave da Pergunta</th><th>Ferramenta</th><th>Objetivo</th></tr>
+<tr><td>Futuro da Vista Alegre</td><td>BCG, 3 Horizontes</td><td>Posicionamento no portfólio Visabeira</td></tr>
+<tr><td>Projeto 539</td><td>Ansoff, Curvas de Valor</td><td>Inovação e rejuvenescimento</td></tr>
+<tr><td>Marca heritage 200 anos</td><td>VRIN, Teia Cultural</td><td>Valor da herança</td></tr>
+<tr><td>Recomendação Board</td><td>M&A, Arq. Financeira</td><td>Manter, vender, IPO?</td></tr>
+</table>
+
+<div class="step-badge">PASSO 2 — Sequência de Ferramentas</div>
+
+<ol>
+<li><strong>VRIN</strong> — Marca bicentenária como Joia da Coroa</li>
+<li><strong>Heartland/Alien</strong> — Posição dentro do Grupo Visabeira</li>
+<li><strong>Curvas de Valor</strong> — Projeto 539 como Value Innovation</li>
+<li><strong>M&A Logic</strong> — Cenários: manter, IPO separado, ou venda</li>
+<li><strong>Arquitetura Financeira</strong> — ROI de cada cenário</li>
+</ol>
+
+<div class="step-badge">PASSO 3 — Aplicação Completa</div>
+
+<h3>VRIN — Marca Vista Alegre 200 Anos (JOIA DA COROA)</h3>
+
+<ul>
+<li><strong>V (Valuable):</strong> SIM — 200 anos de heritage num mercado de luxo onde "história" é o ativo principal. Comparável a Wedgwood (1759), Royal Copenhagen (1775).</li>
+<li><strong>R (Rare):</strong> SIM — Única marca portuguesa de porcelana com reconhecimento internacional bicentenário. Não existe outra.</li>
+<li><strong>I (Inimitable):</strong> SIM — 200 anos de path dependency. É impossível criar "outra marca portuguesa de porcelana com 200 anos". Artesãos com know-how geracional.</li>
+<li><strong>N (Non-substitutable):</strong> SIM — No segmento heritage luxury, não há substituto para autenticidade. IKEA não substitui Vista Alegre.</li>
+</ul>
+<p><strong>Conclusão:</strong> VRIN completo — Joia da Coroa confirmada. A marca é mais valiosa que a operação industrial. Esta é a chave para a recomendação ao Board.</p>
+
+<h3>Recomendação CEO ao Board — 3 Cenários</h3>
+
+<pre>
+CENÁRIO A — Manter no Grupo Visabeira:
+  Pro: Sinergias imobiliário (hotéis + porcelana)
+  Contra: Value-trap no Heartland/Alien → HQ não entende luxo
+  Valor: €200M (com desconto conglomerado)
+
+CENÁRIO B — IPO Separado:
+  Pro: Mercado valoriza luxo heritage a premium (Hermès 50x P/E)
+  Contra: Custo IPO €5-10M, governance mais complexa
+  Valor: €350-400M (sem desconto, premium heritage)
+
+CENÁRIO C — Venda a Grupo de Luxo:
+  Pro: Compradores naturais (LVMH, Kering, Richemont)
+  Contra: Perda de controlo, risco cultural
+  Valor: €300-350M (com premium estratégico)
+
+RECOMENDAÇÃO: CENÁRIO B (IPO separado)
+- Cria €150-200M de valor vs manter no grupo
+- Mantém controlo através de participação maioritária
+- Elimina desconto de conglomerado para VA
+- Sinaliza ao mercado que Visabeira "desbloqueia valor"
+</pre>
+`;
+
+// Frulact — Type D
+answers["frulact_D"] = `
+<h2>QUESTÃO — Tipo D: Estratégia de Entrada em Mercado (CDO) (3 val)</h2>
+
+<div class="step-badge">PASSO 1 — Palavras-Chave → Ferramentas</div>
+
+<table>
+<tr><th>Palavra-Chave da Pergunta</th><th>Ferramenta</th><th>Objetivo</th></tr>
+<tr><td>Internacionalização</td><td>CAGE, Hofstede, Drivers Yip</td><td>Avaliar distância e atratividade</td></tr>
+<tr><td>Novos mercados</td><td>Ansoff, Modos Entrada</td><td>Estratégia de crescimento</td></tr>
+<tr><td>B2B ingredientes</td><td>Porter+, 12C</td><td>Dinâmica setorial por país</td></tr>
+<tr><td>Co-development</td><td>VRIN, Hamel</td><td>Modelo como vantagem competitiva</td></tr>
+</table>
+
+<div class="step-badge">PASSO 2 — Sequência de Ferramentas</div>
+
+<ol>
+<li><strong>Ansoff</strong> — Quadrante de crescimento (mercados + produtos)</li>
+<li><strong>CAGE</strong> — Tabela comparativa 4 mercados potenciais</li>
+<li><strong>Modos de Entrada</strong> — Tabela comparativa por mercado</li>
+<li><strong>12C</strong> — Contextos relevantes para decisão</li>
+</ol>
+
+<div class="step-badge">PASSO 3 — Aplicação Completa</div>
+
+<h3>Ansoff — Development de Mercado (produtos existentes, mercados novos)</h3>
+
+<p>A Frulact opera no quadrante <strong>Market Development</strong>: leva a mesma capacidade de co-development de preparados de fruta para novos mercados geográficos. O modelo B2B permite replicação — o cliente (Danone, Nestlé, Lactalis) já opera globalmente e puxa a Frulact consigo.</p>
+
+<h3>CAGE — Análise de Distância para 4 Mercados Prioritários</h3>
+
+<table>
+<tr><th>Dimensão</th><th>EUA</th><th>Brasil</th><th>Indonésia</th><th>Marrocos</th></tr>
+<tr><td><strong>Cultural</strong></td><td>MÉDIA — hábitos alimentares diferentes, mas clientes B2B são MNCs globais</td><td>BAIXA — língua portuguesa, cultura próxima</td><td>ALTA — cultura muito distinta, halal requirements</td><td>BAIXA-MÉDIA — francofonia, proximidade cultural mediterrânica</td></tr>
+<tr><td><strong>Administrative</strong></td><td>ALTA — FDA regulação complexa, tarifas potenciais</td><td>MÉDIA — Mercosul, burocracia mas Portugal tem relação</td><td>MÉDIA — regulação em evolução, ASEAN trade</td><td>BAIXA — acordo UE-Marrocos, zona franca Tânger</td></tr>
+<tr><td><strong>Geographical</strong></td><td>ALTA — 5.500km, timezone diferente</td><td>ALTA — 7.500km mas rota marítima direta</td><td>MUITO ALTA — 11.000km+</td><td>MUITO BAIXA — 1.000km, ferry de Espanha</td></tr>
+<tr><td><strong>Economic</strong></td><td>BAIXA — mercado premium, alto poder compra</td><td>MÉDIA — mercado enorme mas volátil (câmbio BRL)</td><td>ALTA — custo trabalho muito baixo, mercado em crescimento</td><td>MÉDIA — custo baixo, mercado emergente mas menor</td></tr>
+</table>
+
+<h3>Modos de Entrada — Comparação</h3>
+
+<table>
+<tr><th>Modo</th><th>Greenfield</th><th>Partnership/JV</th><th>Aquisição</th></tr>
+<tr><td><strong>Custo</strong></td><td>€30-50M capex (fábrica)</td><td>€5-10M minority stake</td><td>€80-150M (empresa local)</td></tr>
+<tr><td><strong>Tempo Operacional</strong></td><td>18-24 meses</td><td>3-6 meses</td><td>6-12 meses</td></tr>
+<tr><td><strong>Risco</strong></td><td>ALTO (construir do zero)</td><td>MÉDIO (partilhado)</td><td>MÉDIO-ALTO (integração cultural)</td></tr>
+<tr><td><strong>Controlo</strong></td><td>TOTAL</td><td>PARCIAL</td><td>TOTAL (pós-integração)</td></tr>
+<tr><td><strong>Payback</strong></td><td>4-5 anos</td><td>2-3 anos</td><td>3-4 anos</td></tr>
+</table>
+
+<p><strong>RECOMENDAÇÃO por mercado:</strong></p>
+<ul>
+<li><strong>Marrocos:</strong> Greenfield — CAGE baixo, custo construção baixo, zona franca Tânger. Serve como hub para África.</li>
+<li><strong>Brasil:</strong> Aquisição — Mercado grande demais para entrar lentamente. Comprar player local com relações B2B existentes. Frulact já tem experiência de M&A (€600M).</li>
+<li><strong>EUA:</strong> Partnership/JV — CAGE alto, regulação FDA complexa. Melhor entrar com parceiro local que conheça o mercado e depois escalar.</li>
+<li><strong>Indonésia:</strong> Partnership — CAGE muito alto, complexidade halal. JV com player local com certificação halal já estabelecida.</li>
+</ul>
+`;
+
+// Tekever — Type A
+answers["tekever_A"] = `
+<h2>QUESTÃO — Tipo A: Enquadramento Estratégico Completo (CSO)</h2>
+
+<div class="step-badge">PASSO 1 — Palavras-Chave → Ferramentas</div>
+
+<table>
+<tr><th>Palavra-Chave da Pergunta</th><th>Ferramenta</th><th>Objetivo</th></tr>
+<tr><td>Unicórnio DefTech</td><td>PESTEL, VUCA, 3 Horizontes</td><td>Contexto geopolítico e crescimento</td></tr>
+<tr><td>OVERMATCH £400M</td><td>VRIN, Arq. Financeira</td><td>Contrato como ativo estratégico</td></tr>
+<tr><td>Disrupção drones</td><td>6D's, Curva S, Porter+</td><td>Posição na curva de disrupção</td></tr>
+<tr><td>NATO/defesa</td><td>PESTEL (Political), VUCA</td><td>Contexto geopolítico</td></tr>
+<tr><td>Escala internacional</td><td>CAGE, Ansoff</td><td>Expansão mercados defesa</td></tr>
+</table>
+
+<div class="step-badge">PASSO 2 — Sequência de Ferramentas</div>
+
+<ol>
+<li><strong>PESTEL</strong> — Key Drivers: guerra Ucrânia, rearmamento NATO, regulação drones</li>
+<li><strong>VUCA</strong> — Ambiente DefTech como o mais VUCA de todas as 7 empresas</li>
+<li><strong>6D's</strong> — Drones como disrupção pura na defesa</li>
+<li><strong>Porter+</strong> — Indústria DefTech emergente</li>
+<li><strong>VRIN</strong> — Tecnologia Tekever + contrato OVERMATCH</li>
+<li><strong>SWOT</strong> — Síntese</li>
+</ol>
+
+<div class="step-badge">PASSO 3 — Aplicação Completa</div>
+
+<h3>PESTEL — Rearmamento NATO como Key Driver for Change</h3>
+
+<p><strong>Tailwinds:</strong> Guerra Ucrânia provou valor dos drones (+10,000% uso militar 2022-2025), NATO aumenta orçamentos defesa para 2%+ PIB, regulação dual-use favorece inovadores europeus, UE cria fundo defesa €8B</p>
+<p><strong>Headwinds:</strong> Dependência de contratos governamentais (ciclos políticos), regulação exportação (ITAR-like na UE), concentração cliente (poucos compradores = poder negocial alto), geopolítica pode inverter (paz reduz urgência)</p>
+<p><strong>Implicação estratégica:</strong> A Tekever está no lugar certo no momento certo. O rearmamento NATO é o maior tailwind possível para uma empresa de drones europeia. Mas o timing é tudo — este ciclo de investimento não dura para sempre.</p>
+
+<h3>VUCA — O Ambiente Mais Volátil das 7 Empresas</h3>
+
+<table>
+<tr><th>Dimensão</th><th>Nível</th><th>Evidência</th></tr>
+<tr><td><strong>Volatility</strong></td><td>EXTREMA</td><td>Conflitos geopolíticos mudam prioridades em semanas. Um cessar-fogo na Ucrânia muda tudo.</td></tr>
+<tr><td><strong>Uncertainty</strong></td><td>EXTREMA</td><td>Quem ganha eleições nos EUA/Europa muda orçamentos defesa. Regulação drones evolui mensalmente.</td></tr>
+<tr><td><strong>Complexity</strong></td><td>MUITO ALTA</td><td>Interação NATO + UE + governos nacionais + regulação export + tecnologia + supply chain.</td></tr>
+<tr><td><strong>Ambiguity</strong></td><td>ALTA</td><td>Drones são arma? Ferramenta de vigilância? Dual-use? Classificação muda posição regulatória.</td></tr>
+</table>
+
+<h3>VRIN — Contrato OVERMATCH como Joia da Coroa</h3>
+
+<ul>
+<li><strong>V (Valuable):</strong> SIM — £400M de revenue garantida. Prova de conceito ao mais alto nível (NATO). Validação que abre portas a todos os outros contratos europeus.</li>
+<li><strong>R (Rare):</strong> SIM — Unicórnio europeu de drones é raríssimo. Concorrentes são maioritariamente americanos (General Atomics) ou israelitas (Elbit). Na Europa, a Tekever é quase única nesta escala.</li>
+<li><strong>I (Inimitable):</strong> PARCIALMENTE — A tecnologia de drones é replicável a médio prazo. Mas a combinação de tecnologia + contrato NATO + relação institucional + Ricardo Mendes como CEO-founder é difícil de replicar.</li>
+<li><strong>N (Non-substitutable):</strong> PARCIALMENTE — Satélites, aviação tripulada e drones concorrentes são substitutos parciais. Mas o custo/benefício de drones MALE (Medium Altitude Long Endurance) é insuperável para certas missões.</li>
+</ul>
+<p><strong>Conclusão:</strong> VRIN quase completo — o contrato OVERMATCH é a Joia da Coroa mas com risco no N (tecnologia evolui rápido). A Tekever precisa de transformar o contrato em plataforma recorrente, não one-off.</p>
+
+<h3>SWOT — Síntese</h3>
+
+<table>
+<tr><th></th><th>Positivo</th><th>Negativo</th></tr>
+<tr><td><strong>Interno</strong></td><td>Unicórnio com OVERMATCH £400M, tecnologia proprietária, CEO visionário, first-mover europeu</td><td>Dependência de 1 mega-contrato, cash burn elevado, equipa ainda em escala, sem produção massificada</td></tr>
+<tr><td><strong>Externo</strong></td><td>Rearmamento NATO, fundo defesa UE €8B, drones provados na Ucrânia, soberania europeia</td><td>Concorrência US/Israel com mais escala, regulação exportação, risco geopolítico (paz = menos urgência)</td></tr>
+</table>
+`;
+
+// Tekever — Type E
+answers["tekever_E"] = `
+<h2>QUESTÃO — Tipo E: Capabilities & Vantagem Competitiva (2 val)</h2>
+
+<div class="step-badge">PASSO 1 — Palavras-Chave → Ferramentas</div>
+
+<table>
+<tr><th>Palavra-Chave da Pergunta</th><th>Ferramenta</th><th>Objetivo</th></tr>
+<tr><td>Capabilities</td><td>Hamel 3 Capabilities, VRIN</td><td>Mapear e testar top 5</td></tr>
+<tr><td>Vantagem competitiva</td><td>VRIN por letra</td><td>Identificar sustentabilidade</td></tr>
+<tr><td>Investimento</td><td>Arq. Financeira</td><td>Priorizar alocação €</td></tr>
+</table>
+
+<div class="step-badge">PASSO 2 — Sequência de Ferramentas</div>
+
+<ol>
+<li><strong>Hamel 3 Capabilities</strong> — Mapear as 3 dimensões</li>
+<li><strong>Top 5 Capabilities com VRIN</strong> — Teste por letra para cada uma</li>
+<li><strong>Investimento priorizado</strong> — Alocação € a 5 anos</li>
+</ol>
+
+<div class="step-badge">PASSO 3 — Aplicação Completa</div>
+
+<h3>1. Tecnologia de Drones MALE Proprietária (VRIN: VRI parcial)</h3>
+<ul>
+<li><strong>V:</strong> SIM — Core do negócio, permite missões de 20+ horas a fração do custo de aviação tripulada.</li>
+<li><strong>R:</strong> SIM — Única empresa europeia com capacidade MALE certificada nesta escala.</li>
+<li><strong>I:</strong> PARCIALMENTE — Tecnologia replicável com investimento. China e Turquia avançam rápido (Bayraktar TB2).</li>
+<li><strong>N:</strong> NÃO — Satélites + drones concorrentes podem substituir para certas missões.</li>
+</ul>
+
+<h3>2. Contrato OVERMATCH / Relação NATO (VRIN: VRIN completo)</h3>
+<ul>
+<li><strong>V:</strong> SIM — £400M revenue + validação institucional ao mais alto nível.</li>
+<li><strong>R:</strong> SIM — Nenhum outro drone europeu tem contrato NATO desta escala.</li>
+<li><strong>I:</strong> SIM — Relações institucionais levam anos a construir. Security clearances não se compram.</li>
+<li><strong>N:</strong> SIM — Para missões NATO na Europa, não há substituto europeu viável.</li>
+</ul>
+
+<h3>3. Plataforma de Dados Oceânicos (VRIN: VR)</h3>
+<ul>
+<li><strong>V:</strong> SIM — Monitorização marítima (fronteiras, fisheries, poluição) é mercado em crescimento.</li>
+<li><strong>R:</strong> SIM — Combinação drone + AI + dados oceânicos é nicho.</li>
+<li><strong>I:</strong> NÃO — Satélites e drones concorrentes podem replicar.</li>
+<li><strong>N:</strong> NÃO — Satélites já fazem parte desta monitorização.</li>
+</ul>
+
+<h3>4. Ricardo Mendes como CEO-Founder (VRIN: VRI)</h3>
+<ul>
+<li><strong>V:</strong> SIM — Visão, rede de contactos defesa, capacidade de fundraising (unicórnio).</li>
+<li><strong>R:</strong> SIM — Poucos founders europeus de DefTech com este perfil.</li>
+<li><strong>I:</strong> SIM — Pessoa é única, relações pessoais intransferíveis.</li>
+<li><strong>N:</strong> PARCIALMENTE — Se sair, a empresa pode continuar mas perde momentum e rede.</li>
+</ul>
+
+<h3>5. Equipa de Engenharia Portuguesa (VRIN: VR)</h3>
+<ul>
+<li><strong>V:</strong> SIM — Engenheiros portugueses qualificados a custo 30-40% abaixo de equivalentes UK/FR/DE.</li>
+<li><strong>R:</strong> PARCIALMENTE — Outros hubs de talento (Estónia, Roménia) têm custo similar.</li>
+<li><strong>I:</strong> NÃO — Talento é móvel e recrutável por concorrentes.</li>
+<li><strong>N:</strong> NÃO — Engenheiros podem ser substituídos, embora com curva de aprendizagem.</li>
+</ul>
+
+<h3>INVESTIMENTO PRIORIZADO (5 anos)</h3>
+<pre>
+1. Contrato OVERMATCH (execução impecável):  £50M (do contrato)
+2. R&D tecnologia drone (next-gen):           €80M
+3. Plataforma dados AI:                       €30M
+4. Retenção talento engenharia:               €15M
+5. Expansão comercial NATO/UE:                €25M
+
+Total: ~€200M (financiado por OVERMATCH + fundraising Series C+)
+</pre>
+`;
+
+// Super Bock — Type G
+answers["super_bock_G"] = `
+<h2>QUESTÃO — Tipo G: Ética & ESG (2 val)</h2>
+
+<div class="step-badge">PASSO 1 — Palavras-Chave → Ferramentas</div>
+
+<table>
+<tr><th>Palavra-Chave da Pergunta</th><th>Ferramenta</th><th>Objetivo</th></tr>
+<tr><td>Water stress</td><td>PESTEL (Environmental), Ética</td><td>Tensão entre produção e recurso escasso</td></tr>
+<tr><td>€80M descarbonização</td><td>Arq. Financeira, ESG</td><td>ROI do investimento verde</td></tr>
+<tr><td>Sustentabilidade</td><td>Stakeholders, Matriz Legal/Ética</td><td>Equilíbrio stakeholders</td></tr>
+<tr><td>Responsabilidade cervejeira</td><td>Ética, Segmentação</td><td>Álcool + saúde pública</td></tr>
+</table>
+
+<div class="step-badge">PASSO 2 — Sequência de Ferramentas</div>
+
+<ol>
+<li><strong>Princípio central</strong> — Posição ética/estratégica</li>
+<li><strong>Argumentos 1-4</strong> — Racional detalhado</li>
+<li><strong>Segmentação</strong> — Comunicação diferenciada</li>
+<li><strong>Matriz Legal/Ética</strong> — Posicionamento</li>
+</ol>
+
+<div class="step-badge">PASSO 3 — Aplicação Completa</div>
+
+<h3>PRINCÍPIO CENTRAL</h3>
+<p><strong>"A Super Bock tem obrigação estratégica e ética de liderar a descarbonização do setor cervejeiro português — não apenas porque é o certo, mas porque é a única estratégia sustentável num contexto de water stress crescente."</strong></p>
+
+<h3>ARGUMENTO 1 — Water Stress é Existencial, Não Opcional</h3>
+<p>Portugal está entre os países europeus mais vulneráveis a water stress. Para uma cervejeira que usa 4-6 litros de água por litro de cerveja, isto não é ESG cosmético — é risco operacional existencial.</p>
+<ol>
+<li>Produção cervejeira depende 100% de água de qualidade — sem água, não há negócio</li>
+<li>Investir €80M em eficiência hídrica é seguro de negócio, não filantropia</li>
+<li>Alternativa (não investir) = risco de interrupção produção em anos de seca severa</li>
+</ol>
+
+<h3>ARGUMENTO 2 — €80M com ROI Demonstrável</h3>
+<pre>
+Investimento Descarbonização:          €80M (5 anos)
+  - Eficiência hídrica:                €25M (reduzir 4.5L→3L por litro cerveja)
+  - Energia renovável:                 €30M (painéis solares, PPAs)
+  - Packaging sustentável:             €15M (vidro retornável, redução plástico)
+  - Agricultura regenerativa:          €10M (fornecedores cevada sustentáveis)
+
+Retorno Anual Estimado:                €20-25M
+  - Poupança energia:                  €8-10M/ano
+  - Poupança água:                     €5-7M/ano
+  - Premium pricing "green":           €3-4M/ano
+  - Evitar taxa carbono (futuro):      €4-5M/ano
+
+Payback:                               3.5-4 anos
+</pre>
+
+<h3>ARGUMENTO 3 — Alinhamento com Valores e Marca</h3>
+<p>A Super Bock é "a cerveja de Portugal". Portugal é sol, mar, natureza. Uma marca portuguesa que não protege o ambiente português perde autenticidade. O investimento ESG reforça o posicionamento — não o contradiz.</p>
+
+<h3>ARGUMENTO 4 — Segmentação da Comunicação</h3>
+<pre>
+SEGMENTO A (Consumidor Jovem 18-35, urbano, eco-consciente):
+- Mensagem: "Cada Super Bock usa 33% menos água que há 5 anos"
+- Canal: Instagram, TikTok, festivais de verão
+- ROI: ALTO (fidelização geracional)
+
+SEGMENTO B (Consumidor Tradicional 35-55, rural/suburbano):
+- Mensagem: "A mesma cerveja de sempre, agora com menos impacto"
+- Canal: TV, ponto de venda, patrocínios desportivos
+- ROI: MÉDIO (não alienar base)
+
+SEGMENTO C (HoReCa — hotéis, restaurantes, cafés):
+- Mensagem: "Parceiro de sustentabilidade — vidro retornável, logística verde"
+- Canal: Força vendas directa, programa fidelização HoReCa
+- ROI: ALTO (diferenciação vs Sagres)
+
+SEGMENTO D (Investidores/Analistas):
+- Mensagem: "€80M de investimento ESG com payback 3.5 anos — criação de valor"
+- Canal: Relatório sustentabilidade, roadshow investidores
+- ROI: MUITO ALTO (acesso a capital ESG, lower cost of debt)
+</pre>
+
+<h3>Matriz Legal/Ética</h3>
+<table>
+<tr><th></th><th>Legal</th><th>Ilegal</th></tr>
+<tr><td><strong>Ético</strong></td><td>✅ Investir €80M em descarbonização (legal + ético = ideal)</td><td>N/A</td></tr>
+<tr><td><strong>Não-Ético</strong></td><td>⚠ Greenwashing — comunicar sustentabilidade sem investimento real (legal mas moralmente questionável)</td><td>❌ Despejar resíduos, falsificar relatórios ambientais</td></tr>
+</table>
+
+<p><strong>Posicionamento:</strong> A Super Bock deve estar firmemente no quadrante Legal + Ético, investindo real e comunicando com transparência. Evitar a todo o custo o greenwashing (quadrante Legal + Não-Ético) que destrói confiança quando exposto.</p>
+`;
+
+// Super Bock — Type A
+answers["super_bock_A"] = `
+<h2>QUESTÃO — Tipo A: Enquadramento Estratégico Completo (CSO)</h2>
+
+<div class="step-badge">PASSO 1 — Palavras-Chave → Ferramentas</div>
+
+<table>
+<tr><th>Palavra-Chave da Pergunta</th><th>Ferramenta</th><th>Objetivo</th></tr>
+<tr><td>Mercado cervejeiro português</td><td>PESTEL, Porter+, C1-C4</td><td>Contexto e dinâmica competitiva</td></tr>
+<tr><td>Sustentabilidade/Water stress</td><td>PESTEL (E), ESG</td><td>Desafio ambiental central</td></tr>
+<tr><td>Descarbonização €80M</td><td>Arq. Financeira, BCG</td><td>Investimento e retorno</td></tr>
+<tr><td>Liderança mercado</td><td>VRIN, Genéricas</td><td>Vantagem competitiva vs Sagres</td></tr>
+</table>
+
+<div class="step-badge">PASSO 2 — Sequência de Ferramentas</div>
+
+<ol>
+<li><strong>PESTEL</strong> — Key Drivers: water stress + regulação ambiental</li>
+<li><strong>Porter+</strong> — Duopólio Super Bock vs Sagres</li>
+<li><strong>Genéricas</strong> — Posição na Curva U</li>
+<li><strong>VRIN</strong> — Marca Super Bock como ativo</li>
+<li><strong>BCG</strong> — Portfolio bebidas com Ciclo do Dinheiro</li>
+<li><strong>SWOT</strong> — Síntese</li>
+</ol>
+
+<div class="step-badge">PASSO 3 — Aplicação Completa</div>
+
+<h3>PESTEL — Water Stress como Key Driver for Change</h3>
+
+<p><strong>Tailwinds:</strong> Turismo crescente em Portugal (+15% nos últimos anos) aumenta consumo, cultura cervejeira forte (per capita ~50L/ano), regulação EU Green Deal incentiva investimentos verdes com acesso a funding</p>
+<p><strong>Headwinds:</strong> Water stress crescente (Portugal top 5 risco hídrico na Europa), regulação ambiental mais rigorosa, custos energia e matéria-prima em alta, pressão saúde pública sobre álcool</p>
+<p><strong>Implicação estratégica:</strong> O Key Driver é o water stress — uma cervejeira que usa 4-6L água por litro produzido num país com escassez hídrica crescente enfrenta risco existencial a 10-20 anos se não agir agora.</p>
+
+<h3>Porter+ — Duopólio com Dinâmica Peculiar</h3>
+
+<table>
+<tr><th>Força</th><th>Avaliação</th><th>Implicação</th></tr>
+<tr><td><strong>Rivalidade</strong></td><td>ALTA (mas estável)</td><td>Duopólio Super Bock (~50%) vs Sagres (~45%). Competição intensa mas previsível.</td></tr>
+<tr><td><strong>Poder Clientes</strong></td><td>MÉDIO-ALTO</td><td>Grande distribuição (Sonae, Jerónimo Martins) negoceia agressivamente. HoReCa mais fragmentado.</td></tr>
+<tr><td><strong>Poder Fornecedores</strong></td><td>MÉDIO</td><td>Cevada/malte = commodity com alternativas. Mas água = fornecedor monopolista (Estado/natureza).</td></tr>
+<tr><td><strong>Novos Entrantes</strong></td><td>BAIXO (mass) / MÉDIO (craft)</td><td>Cervejas artesanais crescem mas sem escala. Ameaça real é imported premium (Heineken, AB InBev directo).</td></tr>
+<tr><td><strong>Substitutos</strong></td><td>MÉDIO-ALTO</td><td>Vinho (tradição portuguesa), spirits, hard seltzers, cerveja sem álcool, refrigerantes premium.</td></tr>
+<tr><td><strong>+ Tecnologia</strong></td><td>MÉDIO</td><td>Produção é madura. Inovação em packaging, eficiência hídrica, e-commerce directo ao consumidor.</td></tr>
+<tr><td><strong>+ Regulação</strong></td><td>ALTO</td><td>Regulação ambiental (água, carbono), regulação álcool (publicidade, impostos), EU Green Deal.</td></tr>
+</table>
+
+<h3>VRIN — Marca Super Bock (JOIA DA COROA)</h3>
+
+<ul>
+<li><strong>V (Valuable):</strong> SIM — Marca líder de cerveja em Portugal com ~50% quota. €608M faturação. A marca mais reconhecida no país no seu segmento.</li>
+<li><strong>R (Rare):</strong> SIM — Só existe uma "cerveja de Portugal" com este nível de reconhecimento. Sagres é concorrente mas não tem a mesma ligação emocional no Norte e Centro.</li>
+<li><strong>I (Inimitable):</strong> SIM — Décadas de brand building, associação a festivais (Super Bock Super Rock), futebol, cultura portuguesa. Path dependency impossível de replicar.</li>
+<li><strong>N (Non-substitutable):</strong> PARCIALMENTE — Para consumo social/cultural, a marca é insubstituível. Mas para consumo funcional, qualquer cerveja serve.</li>
+</ul>
+<p><strong>Conclusão:</strong> VRI confirmados, N parcial — Joia da Coroa com risco no segmento funcional. Estratégia deve reforçar ligação emocional/cultural (onde N é forte) vs commodity (onde N é fraco).</p>
+
+<h3>SWOT — Síntese</h3>
+
+<table>
+<tr><th></th><th>Positivo</th><th>Negativo</th></tr>
+<tr><td><strong>Interno</strong></td><td>Marca líder ~50%, €608M revenue, investimento €80M green (first-mover ESG), portfolio diversificado (água, sumos)</td><td>Dependência mercado PT (~85% receitas), water stress impacta produção, custos descarbonização pressionam margens curto prazo</td></tr>
+<tr><td><strong>Externo</strong></td><td>Turismo crescente, EU Green Deal funding, cerveja artesanal cria premium no mercado, exportação para CPLP</td><td>Sagres investimento Heineken (deep pockets), regulação álcool mais restritiva, substitutos em crescimento, seca recorrente</td></tr>
+</table>
+`;
+
+// Frulact — Type A
+answers["frulact_A"] = `
+<h2>QUESTÃO — Tipo A: Enquadramento Estratégico Completo (CSO)</h2>
+
+<div class="step-badge">PASSO 1 — Palavras-Chave → Ferramentas</div>
+
+<table>
+<tr><th>Palavra-Chave da Pergunta</th><th>Ferramenta</th><th>Objetivo</th></tr>
+<tr><td>Modelo co-development B2B</td><td>VRIN, Hamel, Porter+</td><td>Vantagem competitiva única</td></tr>
+<tr><td>Aquisição €600M</td><td>M&A, Arq. Financeira</td><td>Lógica estratégica M&A</td></tr>
+<tr><td>Internacionalização</td><td>CAGE, Ansoff, Modos Entrada</td><td>Expansão geográfica</td></tr>
+<tr><td>Ingredientes alimentares</td><td>PESTEL, Porter+</td><td>Dinâmica setorial</td></tr>
+</table>
+
+<div class="step-badge">PASSO 2 — Sequência de Ferramentas</div>
+
+<ol>
+<li><strong>PESTEL</strong> — Key Drivers: saúde/nutrição + consolidação B2B</li>
+<li><strong>Porter+</strong> — Indústria ingredientes B2B</li>
+<li><strong>VRIN</strong> — Modelo co-development como Joia da Coroa</li>
+<li><strong>M&A</strong> — Lógica da aquisição €600M</li>
+<li><strong>Ansoff</strong> — Quadrante de crescimento</li>
+<li><strong>SWOT</strong> — Síntese</li>
+</ol>
+
+<div class="step-badge">PASSO 3 — Aplicação Completa</div>
+
+<h3>PESTEL — Saúde e Clean Label como Key Drivers</h3>
+
+<p><strong>Tailwinds:</strong> Tendência global clean label e redução açúcar (+8% CAGR mercado ingredientes naturais), consolidação do setor (grandes compram pequenos), crescimento classe média em mercados emergentes (mais iogurtes, mais preparados de fruta)</p>
+<p><strong>Headwinds:</strong> Volatilidade preço fruta (commodity), supply chain agrícola vulnerável a clima, regulação alimentar mais rigorosa (EU Farm-to-Fork), custos energia industrial em alta</p>
+
+<h3>VRIN — Modelo Co-Development (JOIA DA COROA)</h3>
+
+<ul>
+<li><strong>V (Valuable):</strong> SIM — O modelo co-development cria switching costs enormes. Frulact desenvolve preparados customizados COM o cliente (Danone, Nestlé, Lactalis). O produto é co-criado, não comprado off-the-shelf. Isso gera €300M de revenue recorrente.</li>
+<li><strong>R (Rare):</strong> SIM — A maioria dos concorrentes vende ingredientes commodity. O co-development a esta escala e com esta profundidade relacional é raro no setor.</li>
+<li><strong>I (Inimitable):</strong> SIM — Décadas de relações com equipas de R&D dos clientes, know-how acumulado de centenas de formulações customizadas, presença in-loco nos centros de inovação dos clientes.</li>
+<li><strong>N (Non-substitutable):</strong> SIM — Para um cliente que co-desenvolveu 50 SKUs com a Frulact, mudar de fornecedor implica re-desenvolver tudo. Switching cost de 18-24 meses + milhões em R&D.</li>
+</ul>
+<p><strong>Conclusão:</strong> VRIN completo — o modelo co-development é uma Joia da Coroa genuína. É o ativo mais valioso da Frulact, mais do que qualquer fábrica ou patente.</p>
+
+<h3>SWOT — Síntese</h3>
+
+<table>
+<tr><th></th><th>Positivo</th><th>Negativo</th></tr>
+<tr><td><strong>Interno</strong></td><td>Modelo co-development VRIN completo, relações MNC (Danone/Nestlé), presença multi-continente, experiência M&A (€600M)</td><td>Dependência de poucos clientes grandes, margens pressionadas por commodity (fruta), integração pós-aquisição em curso</td></tr>
+<tr><td><strong>Externo</strong></td><td>Clean label trend +8% CAGR, consolidação setorial (oportunidade M&A), crescimento classe média emergente</td><td>Volatilidade matéria-prima, regulação EU Farm-to-Fork, concorrentes com mais escala (Kerry, Symrise)</td></tr>
+</table>
+`;
+
+// Vista Alegre — Type A
+answers["vista_alegre_A"] = `
+<h2>QUESTÃO — Tipo A: Enquadramento Estratégico Completo (CSO)</h2>
+
+<div class="step-badge">PASSO 1 — Palavras-Chave → Ferramentas</div>
+
+<table>
+<tr><th>Palavra-Chave da Pergunta</th><th>Ferramenta</th><th>Objetivo</th></tr>
+<tr><td>Porcelana / luxo heritage</td><td>VRIN, Porter+, Genéricas</td><td>Posição competitiva no luxo</td></tr>
+<tr><td>200 anos história</td><td>VRIN, Teia Cultural</td><td>Heritage como ativo estratégico</td></tr>
+<tr><td>Projeto 539</td><td>Ansoff, Curvas de Valor, 3 Horizontes</td><td>Rejuvenescimento da marca</td></tr>
+<tr><td>Grupo Visabeira</td><td>Heartland/Alien, Ashridge</td><td>Posição dentro do conglomerado</td></tr>
+</table>
+
+<div class="step-badge">PASSO 2 — Sequência de Ferramentas</div>
+
+<ol>
+<li><strong>PESTEL</strong> — Key Drivers: luxo experiencial + turismo Portugal</li>
+<li><strong>Porter+</strong> — Indústria porcelana / luxo heritage</li>
+<li><strong>Genéricas</strong> — Diferenciação por heritage</li>
+<li><strong>VRIN</strong> — Marca bicentenária</li>
+<li><strong>Curvas de Valor</strong> — Projeto 539</li>
+<li><strong>SWOT</strong> — Síntese</li>
+</ol>
+
+<div class="step-badge">PASSO 3 — Aplicação Completa</div>
+
+<h3>PESTEL — Luxo Experiencial como Key Driver</h3>
+
+<p><strong>Tailwinds:</strong> Mercado global de luxo +5% CAGR, turismo em Portugal recorde (30M+ visitantes), tendência "buy experiences not things" favorece heritage brands, China e Médio Oriente compram luxo europeu</p>
+<p><strong>Headwinds:</strong> Inflação pressiona classe média (core buyer de porcelana), gerações jovens preferem minimalismo, concorrência de marcas nórdicas (design moderno vs heritage), fragilidade logística (porcelana = breakage)</p>
+
+<h3>Genéricas — Diferenciação Premium por Heritage</h3>
+
+<p>Vista Alegre opera na <strong>Diferenciação</strong> na Curva U — não compete por preço (IKEA) nem por volume. Compete por autenticidade e história. Posição clara fora da Deep Shit Valley. O risco seria descer para "porcelana acessível" — isso seria entrar na Valley sem a estrutura de custos para competir.</p>
+
+<h3>Curvas de Valor — Projeto 539 como Value Innovation</h3>
+
+<table>
+<tr><th>Ação</th><th>Elemento</th><th>Detalhe</th></tr>
+<tr><td><strong>Eliminar</strong></td><td>Distribuição massificada</td><td>Sair de canais low-end que diluem marca</td></tr>
+<tr><td><strong>Reduzir</strong></td><td>SKUs commodity</td><td>Menos peças genéricas, mais edições curadas</td></tr>
+<tr><td><strong>Aumentar</strong></td><td>Experiência na loja/fábrica</td><td>Visitas à fábrica como experiência turística premium</td></tr>
+<tr><td><strong>Criar</strong></td><td>Colaborações artísticas</td><td>Edições limitadas com artistas/designers contemporâneos (Projeto 539)</td></tr>
+</table>
+
+<p><strong>Projeto 539:</strong> O nome refere-se à essência da marca — reimaginar 200 anos de tradição com criatividade contemporânea. Eliminar/Reduzir/Aumentar/Criar posiciona Vista Alegre como "heritage luxury brand" e não apenas "fábrica de porcelana".</p>
+
+<h3>SWOT — Síntese</h3>
+
+<table>
+<tr><th></th><th>Positivo</th><th>Negativo</th></tr>
+<tr><td><strong>Interno</strong></td><td>200 anos VRIN completo, artesãos qualificados, Projeto 539 inovação, fábrica como experiência turística</td><td>Escala limitada, dependência grupo Visabeira (Value-trap), custos produção artesanal elevados, distribuição limitada</td></tr>
+<tr><td><strong>Externo</strong></td><td>Luxo +5% CAGR, turismo Portugal recorde, China compra luxo europeu, tendência heritage/autenticidade</td><td>Concorrência nórdica (design moderno), gerações jovens minimalistas, fragilidade logística, inflação pressiona consumo</td></tr>
+</table>
+`;
+
+// Visabeira Type B
+answers["visabeira_B"] = `
+<h2>QUESTÃO — Tipo B: Recomendação ao Board (CEO) (4-5 val)</h2>
+
+<div class="step-badge">PASSO 1 — Palavras-Chave → Ferramentas</div>
+
+<table>
+<tr><th>Palavra-Chave da Pergunta</th><th>Ferramenta</th><th>Objetivo</th></tr>
+<tr><td>Reestruturação grupo</td><td>Heartland/Alien, Ashridge</td><td>Que negócios manter?</td></tr>
+<tr><td>Envolvimento Goldman Sachs</td><td>M&A, Arq. Financeira</td><td>Opções estratégicas</td></tr>
+<tr><td>Criação de valor</td><td>Desconto Conglomerado</td><td>Desbloquear valor escondido</td></tr>
+<tr><td>Recomendação Board</td><td>7S, Cenários</td><td>Implementação da decisão</td></tr>
+</table>
+
+<div class="step-badge">PASSO 2 — Sequência de Ferramentas</div>
+
+<ol>
+<li><strong>Desconto Conglomerado</strong> — Quantificar destruição de valor atual</li>
+<li><strong>Heartland/Alien</strong> — Classificar cada negócio</li>
+<li><strong>M&A reverso</strong> — Cenários de desinvestimento</li>
+<li><strong>Arquitetura Financeira</strong> — Impacto de cada cenário</li>
+<li><strong>7S</strong> — Implementação organizacional</li>
+</ol>
+
+<div class="step-badge">PASSO 3 — Aplicação Completa</div>
+
+<h3>Cenários de Reestruturação — Recomendação CEO</h3>
+
+<pre>
+CENÁRIO 1 — Status Quo (manter conglomerado):
+  Valor grupo: ~€1.8-2.0B (com desconto 25-33%)
+  Risco: Desconto persiste, mercado subvaloriza
+  Probabilidade de sucesso: BAIXA
+
+CENÁRIO 2 — Focus & Divest (recomendado por Goldman):
+  Vender: Turismo + participações non-core
+  IPO separado: Vista Alegre
+  Manter: Engenharia + Nearing + Imobiliário (cash cow)
+  Valor estimado: €2.5-2.8B (eliminação desconto)
+  Criação valor: €500-800M
+  Probabilidade de sucesso: ALTA
+
+CENÁRIO 3 — Full Break-Up:
+  IPO ou venda de cada unidade separadamente
+  Valor SOTP máximo: €2.7B+
+  Risco: Destruição sinergias reais, custo transação €50-80M
+  Probabilidade de sucesso: MÉDIA
+
+RECOMENDAÇÃO: CENÁRIO 2 — Focus & Divest
+Goldman Sachs implementa em 18-24 meses:
+1. Fase 1 (0-6 meses): Vender Turismo (€200-300M)
+2. Fase 2 (6-12 meses): IPO Vista Alegre (€350-400M valuation)
+3. Fase 3 (12-18 meses): Concentrar grupo em Engenharia + Nearing
+4. Resultado: Desconto conglomerado reduz de 30% para 5-10%
+</pre>
+`;
+
+// ─── UI ENGINE ─────────────────────────────────────────────────────────────────
+
+const chatArea = document.getElementById('chatArea');
+let currentCompany = null;
+
+function addMessage(content, isBot = true) {
+  const msg = document.createElement('div');
+  msg.className = `message ${isBot ? 'bot' : 'user'}`;
+  msg.innerHTML = `
+    <div class="message-label">${isBot ? 'Strategy Agent' : 'You'}</div>
+    <div class="message-bubble">${content}</div>
+  `;
+  chatArea.appendChild(msg);
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+function addTyping() {
+  const msg = document.createElement('div');
+  msg.className = 'message bot';
+  msg.id = 'typing';
+  msg.innerHTML = `
+    <div class="message-label">Strategy Agent</div>
+    <div class="message-bubble">
+      <div class="typing-indicator"><span></span><span></span><span></span></div>
+    </div>
+  `;
+  chatArea.appendChild(msg);
+  chatArea.scrollTop = chatArea.scrollHeight;
+  return msg;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing');
+  if (t) t.remove();
+}
+
+function showWelcome() {
+  addMessage(`
+    <p style="margin-bottom:12px">Welcome to the <strong>Strategy Agent</strong> for the Executive MBA at Porto Business School.</p>
+    <p style="margin-bottom:12px">I'm an AI-powered strategy analysis agent built using <strong>Claude AI</strong>, specialized in applying the frameworks and methodology of <strong>Professor Lu&iacute;s Filipe Reis</strong>.</p>
+    <p style="margin-bottom:16px">I can generate exam-ready strategic analysis for any of the <strong>7 case study companies</strong> using the <strong>Gold Standard 3-Step Method</strong> (Passo 1 → 2 → 3), with 32+ strategic frameworks.</p>
+    <p><strong>Select a company to begin:</strong></p>
+    <div class="company-grid">
+      ${Object.entries(companies).map(([key, c]) => `
+        <div class="company-card" onclick="selectCompany('${key}')">
+          <h3>${c.name}</h3>
+          <div class="sector">${c.sector}</div>
+          <div class="desc">${c.desc}</div>
+          <div>${c.tags.map(t => `<span class="data-tag">${t}</span>`).join('')}</div>
+        </div>
+      `).join('')}
+    </div>
+  `);
+}
+
+function selectCompany(key) {
+  currentCompany = key;
+  const c = companies[key];
+  addMessage(`Analyze <strong>${c.name}</strong>`, false);
+
+  const typing = addTyping();
+  setTimeout(() => {
+    removeTyping();
+
+    // Determine available question types for this company
+    const availableTypes = Object.keys(questionTypes).filter(t => answers[`${key}_${t}`]);
+
+    addMessage(`
+      <p style="margin-bottom:8px"><strong>${c.header}</strong></p>
+      <p style="margin-bottom:4px; font-size:12px; color:var(--text-muted)">${c.context}</p>
+      <p style="margin-bottom:16px; font-size:12px; color:var(--highlight)">${c.keyData}</p>
+      <p style="margin-bottom:12px">Select the type of strategic analysis:</p>
+      <div class="question-grid">
+        ${availableTypes.map(t => {
+          const q = questionTypes[t];
+          return `
+            <div class="question-card" onclick="selectQuestion('${key}', '${t}')">
+              <div class="type-badge">${t}</div>
+              <h4>${q.label}</h4>
+              <div class="qdesc">${q.desc}</div>
+              <div class="tools-tag">${q.values} | Role: ${q.role}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+      <button class="back-btn" onclick="goBack()">&#8592; Choose another company</button>
+    `);
+  }, 800);
+}
+
+function selectQuestion(companyKey, type) {
+  const c = companies[companyKey];
+  const q = questionTypes[type];
+  addMessage(`${c.name} — Type ${type}: ${q.label}`, false);
+
+  const typing = addTyping();
+  setTimeout(() => {
+    removeTyping();
+
+    const answerKey = `${companyKey}_${type}`;
+    const answerHtml = answers[answerKey] || '<p>Analysis not yet available for this combination.</p>';
+
+    addMessage(`
+      <div style="background:rgba(233,69,96,0.08); border-left:3px solid var(--highlight); padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:16px">
+        <strong>${c.name}</strong> — ${c.header}<br>
+        <span style="font-size:12px; color:var(--text-muted)">Tipo ${type}: ${q.label} | ${q.values} | Role: ${q.role}</span>
+      </div>
+      <div class="answer-content">
+        ${answerHtml}
+      </div>
+      <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border); font-size:11px; color:var(--text-muted)">
+        <em>Preparado para o Exame de Estrat&eacute;gia — Executive MBA PBS (Professor Lu&iacute;s Filipe Reis)</em><br>
+        <em>An&aacute;lise gerada pelo Strategy Agent usando o m&eacute;todo Gold Standard (Passo 1→2→3)</em>
+      </div>
+      <button class="back-btn" onclick="selectCompany('${companyKey}')">&#8592; Other question types for ${c.name}</button>
+      <button class="back-btn" onclick="goBack()" style="margin-left:8px">&#8592; Choose another company</button>
+    `);
+  }, 1200);
+}
+
+function goBack() {
+  currentCompany = null;
+  chatArea.innerHTML = '';
+  showWelcome();
+}
+
+// Initialize
+showWelcome();
+</script>
+</body>
+</html>
